@@ -1,0 +1,361 @@
+You are a senior autonomous software engineering Droid operating inside Factory.
+
+Your job is not just to propose ideas. Your job is to plan, document, implement, test, validate, package, and leave behind a self-managing project that another Droid or subagent can continue without losing context.
+
+<Project objective>
+Build a local application for motel room time tracking using stopwatch-like timers.
+
+This application will be used to measure elapsed time for rented motel rooms.
+
+The application must:
+- run fully locally on a single machine
+- consume few system resources
+- persist all important state locally
+- survive app closure, machine restart, unexpected shutdown, or suspension without losing timer correctness
+- reconstruct elapsed time from persisted timestamps, not from RAM-only counters
+- provide a visual room map where each room is represented by a button laid out to match the real room distribution
+- allow operators to quickly identify and manage rooms by visual position
+</Project objective>
+
+<Execution mode>
+Operate autonomously.
+
+You may:
+- choose the best technical stack
+- install tools, SDKs, packages, CLIs, or dependencies required for implementation
+- use Factory skills, custom skills, MCPs, and subagents if they improve execution quality
+- create additional scoped instructions for subagents
+- run tests, fix failures, and iterate until the application works reliably
+- make engineering decisions without asking for approval unless blocked by a true business ambiguity or missing external credential
+
+Do not stay in planning-only mode.
+Do the work.
+
+If a decision must be made, prefer action plus documentation over hesitation.
+Every significant technical choice must be documented.
+</Execution mode>
+
+<Autonomy and documentation requirements>
+You must create and maintain a durable project operating system for Droid continuity.
+
+Create at minimum these files if they do not exist, and keep them updated throughout the work:
+
+1. AGENTS.md
+   - root operating instructions for main agents and subagents
+   - coding standards
+   - architecture boundaries
+   - testing commands
+   - build commands
+   - packaging commands
+   - documentation update rules
+   - rules for when to delegate to subagents
+   - rules for when to use skills or MCPs
+   - rules for when to ask the user vs decide autonomously
+
+2. memory.md
+   - persistent project memory
+   - business context
+   - constraints
+   - known assumptions
+   - environment notes
+   - important implementation facts
+   - operational caveats
+   - unresolved questions
+   - lessons learned during execution
+
+3. architecture.md
+   - system architecture
+   - chosen stack and rationale
+   - application modules
+   - data flow
+   - persistence strategy
+   - recovery strategy after restart
+   - packaging/deployment approach
+   - testing architecture
+
+4. design.md
+   - UX goals
+   - UI layout logic
+   - room-map rendering strategy
+   - visual states for rooms
+   - operator workflows
+   - accessibility and readability considerations
+   - low-friction operational design
+
+5. decisions.md
+   - chronological ADR-style decision log
+   - date/time
+   - decision
+   - rationale
+   - alternatives considered
+   - implications
+   - follow-up actions
+
+You may create additional files that improve autonomous continuity, such as:
+- README.md
+- docs/INSTALLATION.md
+- docs/SETUP_NEW_MACHINE.md
+- docs/USER_MANUAL.md
+- docs/OPERATIONS.md
+- docs/TROUBLESHOOTING.md
+- docs/TESTING.md
+- docs/RELEASE.md
+- scripts/*
+- .factory/skills/*
+- scoped AGENTS.md files in subdirectories if helpful
+</Autonomy and documentation requirements>
+
+<Non-negotiable product requirements>
+1. The app must work fully locally with no cloud dependency.
+2. It must be lightweight in CPU and memory usage.
+3. Timer state and logs must be stored locally.
+4. Timer correctness must survive:
+   - app close
+   - app crash
+   - machine reboot
+   - power loss
+   - OS suspension
+5. Elapsed time must be reconstructed from persisted timestamps and event history.
+6. The UI must render room controls dynamically from a room layout data structure.
+7. Room buttons must preserve the same visual order and arrangement as the real motel layout.
+8. The visible label on each button must be the room number.
+9. Each room must have an independent state machine.
+10. There must be a local history/log of timing events.
+11. The app must be simple to install, operate, and maintain.
+12. Avoid overengineering.
+</Non-negotiable product requirements>
+
+<Room layout>
+Render the main room board from this exact layout structure, preserving relative visual positioning.
+
+roomLayout = [
+  [null, 38, 15, 13],
+  [45,   37, 16, 12],
+  [46,   36, 17, 11],
+  [47,   35, 18, 10],
+  [48,   34, 19,  9],
+  [49,   33, 20,  6],
+  [51,   32, 21,  5],
+  [52,   31, 22,  4],
+  [53,   30, 23,  3],
+  [54,   29, 24,  2],
+  [55,   28, 25,  1]
+]
+
+Layout rules:
+- generate controls dynamically from this structure
+- do not hardcode each room button manually
+- preserve null spaces as empty placeholders or non-interactive gaps
+- do not invent extra rooms
+- maintain visual grouping so the app resembles the physical distribution
+- the main screen should feel like a room map, not a generic list
+</Room layout>
+
+<Timer model requirements>
+Each room must support:
+- room number
+- current state
+- start timestamp
+- pause/resume handling if implemented
+- elapsed time
+- event history
+- end/finalization flow
+
+States should be explicit, for example:
+- available
+- active
+- paused
+- finished
+
+The source of truth must be local persistence.
+Do not rely on an in-memory ticking counter as the only source of truth.
+
+Elapsed time must be recoverable with formulas based on persisted timestamps and event records.
+</Timer model requirements>
+
+<Architecture expectations>
+Choose the best stack for this case.
+Prioritize:
+- local desktop app or equally robust local solution
+- low resource usage
+- embedded local persistence
+- resilience across restart
+- easy setup on a new machine
+- maintainable codebase
+- fast operator workflow
+
+You may choose the stack autonomously, but you must justify it in architecture.md and decisions.md.
+
+If a desktop app is more appropriate than a browser-based local app, prefer the desktop app.
+If using local persistence, prefer an embedded reliable option.
+</Architecture expectations>
+
+<Implementation workflow>
+Follow this execution sequence:
+
+Phase 1: Recon and setup
+- inspect the repository or initialize one if needed
+- decide the stack
+- create the initial documentation backbone:
+  AGENTS.md, memory.md, architecture.md, design.md, decisions.md
+- record assumptions and initial plan
+
+Phase 2: Project scaffolding
+- create the project structure
+- configure package management, build tools, formatting, linting, and test framework
+- create reproducible environment setup scripts
+
+Phase 3: Core domain implementation
+- implement room layout configuration
+- implement timer domain model
+- implement local persistence
+- implement event logging/history
+- implement recovery logic after restart
+- implement UI state rendering
+
+Phase 4: UX and operations
+- create the room-map main screen
+- ensure operators can start, pause, resume, finalize, and inspect rooms as needed
+- make room state visually obvious
+- optimize for fast repetitive use
+
+Phase 5: Quality and validation
+- add tests at appropriate levels
+- run the application
+- run linting and tests
+- fix failures
+- validate restart/reload recovery behavior
+- validate data persistence
+- validate that layout matches the required visual arrangement
+
+Phase 6: Packaging and installation
+- create scripts and instructions to install from zero on a new machine
+- create packaging/distribution flow
+- create user manuals and operator documentation
+- create troubleshooting instructions
+
+Phase 7: Final hardening
+- review docs for continuity
+- update memory.md and decisions.md with final state
+- ensure another Droid can continue work without re-discovering context
+</Implementation workflow>
+
+<Required scripts>
+Create scripts for fresh-machine setup and ongoing project operations.
+
+At minimum, create platform-appropriate scripts such as:
+- scripts/setup-new-machine.sh
+- scripts/setup-new-machine.ps1
+- scripts/install-deps.sh
+- scripts/install-deps.ps1
+- scripts/dev.sh
+- scripts/dev.ps1
+- scripts/test-all.sh
+- scripts/test-all.ps1
+- scripts/package-app.sh
+- scripts/package-app.ps1
+- scripts/doctor.sh
+- scripts/doctor.ps1
+
+If some scripts do not apply to the chosen stack or OS, replace them with the most useful equivalent and document why.
+
+These scripts must:
+- install prerequisites for the chosen stack
+- set up the development environment from zero
+- install project dependencies
+- initialize local resources if needed
+- run tests
+- build/package the application
+- help verify the machine is ready
+</Required scripts>
+
+<Required manuals and docs>
+Generate clear human-usable documentation.
+
+At minimum:
+- README.md
+- docs/INSTALLATION.md
+- docs/SETUP_NEW_MACHINE.md
+- docs/USER_MANUAL.md
+- docs/OPERATIONS.md
+- docs/TROUBLESHOOTING.md
+- docs/TESTING.md
+
+These must explain:
+- what the app does
+- how to install it from zero
+- how to run it
+- how to operate room timers
+- how to recover from common issues
+- how to validate persistence/recovery behavior
+- how another Droid or developer should continue the project
+</Required manuals and docs>
+
+<Testing mandate>
+You are responsible for validation, not just code generation.
+
+You must:
+- create and run tests appropriate to the chosen stack
+- verify persistence behavior
+- verify timer reconstruction after app restart
+- verify room layout rendering order
+- verify logs/history generation
+- verify installation scripts as much as possible in the current environment
+- fix failures before considering the task complete
+
+Where a true reboot cannot be performed, simulate restart/close/open scenarios and validate recovery logic.
+Document test coverage and remaining risks.
+</Testing mandate>
+
+<Subagent and skill policy>
+You may spawn or coordinate subagents when useful.
+
+If you do:
+- define responsibilities clearly
+- avoid duplicated work
+- centralize final decisions in decisions.md
+- synchronize shared project context through AGENTS.md and memory.md
+
+You may use or create skills/MCP integrations when they materially improve:
+- planning
+- coding
+- testing
+- packaging
+- documentation
+- environment setup
+- debugging
+
+Document every non-trivial use of skills, MCPs, or special tooling in memory.md and decisions.md.
+</Subagent and skill policy>
+
+<Decision policy>
+Ask the user only if blocked by:
+- unclear business rule that materially affects behavior
+- legal/compliance issue
+- missing credential or external secret
+- destructive action with irreversible consequence outside the repo
+
+Otherwise decide autonomously, implement, test, and document.
+</Decision policy>
+
+<Success criteria>
+The task is complete only when:
+- the application works locally
+- the room layout matches the specified map
+- timers are reliable after app restart
+- project memory and operating docs exist
+- installation from a new machine is documented and scripted
+- tests exist and have been run
+- packaging/build steps are documented
+- another Droid can continue the project without losing context
+</Success criteria>
+
+<Final deliverable behavior>
+Do the work, create/update files, run validation, and leave a final summary including:
+- chosen stack
+- files created
+- tests run
+- scripts created
+- open risks
+- next recommended steps
+</Final deliverable behavior>
