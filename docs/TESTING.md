@@ -23,7 +23,19 @@ python -m pytest tests/test_timer.py::test_active_timer_elapsed -v
 | test_config.py   | Room layout dimensions, positions, room count          |
 | test_state.py    | State machine transitions, valid/invalid transitions   |
 | test_timer.py    | Elapsed time computation, formatting, all event combos |
+| test_csv_export.py | CSV export content, default filename format           |
 | test_persistence.py | DB creation, CRUD, session lifecycle, crash recovery |
+
+## Testing with a Lower Timer Limit
+
+To test the blinking overdue alert without waiting 3 hours, edit `src/config.py`:
+
+```python
+TIMER_LIMIT_SECONDS = 10  # 10 seconds for quick testing
+```
+
+Start the app, click a room, and after 10 seconds it will start blinking.
+Remember to restore the value to `3 * 60 * 60` after testing.
 
 ## Key Test Scenarios
 

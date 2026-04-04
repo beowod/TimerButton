@@ -28,12 +28,22 @@ BUTTON_HEIGHT = 3
 BUTTON_FONT = ("Segoe UI", 11, "bold")
 ELAPSED_FONT = ("Segoe UI", 9)
 
+# Timer limit in seconds. When elapsed time reaches this value, the room
+# button starts blinking to signal that the room must be vacated soon.
+# Default: 3 hours (10800 seconds).
+# For testing, set to a lower value, e.g. 10 for 10 seconds.
+TIMER_LIMIT_SECONDS = 3 * 60 * 60
+
+# Blink interval in milliseconds (how fast the overdue indicator flashes)
+BLINK_INTERVAL_MS = 500
+
 COLORS = {
     "available": {"bg": "#2ecc71", "fg": "#ffffff"},
     "active":    {"bg": "#e74c3c", "fg": "#ffffff"},
     "paused":    {"bg": "#f39c12", "fg": "#000000"},
     "finished":  {"bg": "#3498db", "fg": "#ffffff"},
     "empty":     {"bg": "#ecf0f1", "fg": "#ecf0f1"},
+    "overdue":   {"bg": "#ffffff", "fg": "#e74c3c"},
 }
 
 

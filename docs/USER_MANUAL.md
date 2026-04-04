@@ -16,7 +16,9 @@ python src\main.py
 |--------|-----------|----------------------------|
 | Green  | Available | Room is free               |
 | Red    | Active    | Timer is running           |
+| Red/White blinking | Active (overdue) | Timer exceeded 3 hours - room must be vacated |
 | Orange | Paused    | Timer is paused            |
+| Orange/White blinking | Paused (overdue) | Paused but already exceeded 3 hours |
 | Blue   | Finished  | Timer stopped, showing time|
 
 ## Operating Rooms
@@ -44,6 +46,12 @@ python src\main.py
 - Click the "History" button in the top-right corner
 - See all completed sessions with room number, start/end time, and elapsed time
 
+### Export History to CSV
+- In the History dialog, click "Export CSV"
+- A save dialog opens with a default filename based on the current date and time
+- Choose a location and click Save
+- The CSV file contains: Room, Start Time, End Time, Elapsed
+
 ## Status Bar
 
 The bottom bar shows:
@@ -51,6 +59,19 @@ The bottom bar shows:
 - Number of active timers
 - Number of paused timers
 - Number of available rooms
+
+## Timer Limit (Overdue Alert)
+
+By default, rooms have a **3-hour timer limit**. When the elapsed time reaches 3 hours:
+- The room button starts **blinking** (alternating between its normal color and white)
+- This signals the operator that the room must be vacated soon
+- The blinking continues until the timer is stopped
+
+To change the limit (e.g., for testing), edit `src\config.py`:
+```python
+TIMER_LIMIT_SECONDS = 10  # 10 seconds for testing
+```
+Restart the app after changing the value.
 
 ## Data Safety
 

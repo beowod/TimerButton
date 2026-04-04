@@ -44,6 +44,10 @@
 - [2026-04-03] Room 14 and 50 do not exist in the layout (43 rooms, not 45)
 - [2026-04-03] Empty __init__.py files trigger W391 - ignored in setup.cfg
 - [2026-04-03] Scripts created for: setup, deps, dev, testing, packaging, doctor
+- [2026-04-03] Added 3-hour timer limit with blinking overdue alert
+- [2026-04-03] Added CSV export to history dialog (default filename = current datetime)
+- [2026-04-03] TIMER_LIMIT_SECONDS in config.py is the single knob for testing lower limits
+- [2026-04-03] 37 tests passing after new features
 
 ## Operational Caveats
 - Python WindowsApps stub may interfere - use full path or refresh PATH

@@ -94,3 +94,21 @@ def test_multiple_pause_resume_cycles():
     ]
     elapsed = compute_elapsed_seconds(events, RoomState.FINISHED)
     assert elapsed == 900.0  # 5 + 5 + 5 = 15 min
+
+
+def test_overdue_detection():
+    from src.config import TIMER_LIMIT_SECONDS
+    t0 = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    now = t0 + timedelta(seconds=TIMER_LIMIT_SECONDS + 1)
+    events = [_make_event(EventType.START, t0)]
+    elapsed = compute_elapsed_seconds(events, RoomState.ACTIVE, now=now)
+    assert elapsed >= TIMER_LIMIT_SECONDS
+
+
+def test_not_overdue_within_limit():
+    from src.config import TIMER_LIMIT_SECONDS
+    t0 = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    now = t0 + timedelta(seconds=TIMER_LIMIT_SECONDS - 60)
+    events = [_make_event(EventType.START, t0)]
+    elapsed = compute_elapsed_seconds(events, RoomState.ACTIVE, now=now)
+    assert elapsed < TIMER_LIMIT_SECONDS

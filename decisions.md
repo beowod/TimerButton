@@ -85,7 +85,39 @@
 - Must handle right-click binding in tkinter
 - Need tooltip or visual hint for pause functionality
 
-## ADR-005: Room Layout as Configuration
+## ADR-005: Timer Limit with Blinking Overdue Alert
+**Date**: 2026-04-03
+**Decision**: 3-hour default timer limit with blinking visual cue when exceeded
+**Rationale**:
+- Rooms are rented for a standard period; operators need to know when time is up
+- Blinking is the most attention-grabbing visual cue without audio
+- The button alternates between its normal state color and white/red at 500ms intervals
+- Configurable via `TIMER_LIMIT_SECONDS` in `src/config.py` for testing or business changes
+
+**Alternatives Considered**:
+| Alternative            | Why Not Chosen                                           |
+|------------------------|----------------------------------------------------------|
+| Color change only      | Too subtle, easy to miss among 43 buttons                |
+| Audio alert            | Disruptive in a motel office environment                 |
+| Popup dialog           | Blocks workflow, annoying with many rooms                |
+
+**Implications**:
+- Blink loop runs on a separate timer (500ms) from the main tick (1000ms)
+- Overdue flag is computed from elapsed time on each refresh
+
+## ADR-006: CSV Export for Session History
+**Date**: 2026-04-03
+**Decision**: Add "Export CSV" button to History dialog with default filename = current datetime
+**Rationale**:
+- Operators need to export session data for record-keeping
+- CSV is universally compatible with spreadsheet tools
+- Default filename with timestamp prevents accidental overwrites
+
+**Implications**:
+- Uses standard `csv` module (no extra dependency)
+- Save dialog via `tkinter.filedialog.asksaveasfilename`
+
+## ADR-007: Room Layout as Configuration
 **Date**: 2026-04-03
 **Decision**: Room layout defined as a 2D array in config.py, UI generated dynamically
 **Rationale**:

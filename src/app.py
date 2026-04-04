@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from src.config import (
-    APP_NAME, DB_PATH, UI_UPDATE_INTERVAL_MS, get_all_room_numbers
+    APP_NAME, DB_PATH, UI_UPDATE_INTERVAL_MS, TIMER_LIMIT_SECONDS,
+    BLINK_INTERVAL_MS, get_all_room_numbers
 )
 from src.models.state import RoomState, EventType, can_transition, next_state
 from src.models.timer import Room, compute_elapsed_seconds, format_elapsed
@@ -35,6 +36,7 @@ class Application:
         self._build_ui()
         self._refresh_all_buttons()
         self._schedule_tick()
+        self._schedule_blink()
 
     def _load_rooms(self) -> None:
         for room in self._room_repo.get_all_rooms():
@@ -163,13 +165,18 @@ class Application:
             return
 
         elapsed_text: Optional[str] = None
+        overdue = False
         if room.state in (RoomState.ACTIVE, RoomState.PAUSED, RoomState.FINISHED):
             if room.current_session_id:
                 events = self._event_repo.get_session_events(room.current_session_id)
                 elapsed = compute_elapsed_seconds(events, room.state)
                 elapsed_text = format_elapsed(elapsed)
+                if elapsed >= TIMER_LIMIT_SECONDS and room.state in (
+                    RoomState.ACTIVE, RoomState.PAUSED
+                ):
+                    overdue = True
 
-        btn.update_display(room.state, elapsed_text)
+        btn.update_display(room.state, elapsed_text, overdue=overdue)
         self._update_status_bar()
 
     def _refresh_all_buttons(self) -> None:
@@ -191,6 +198,12 @@ class Application:
         for room in self._rooms.values():
             if room.state == RoomState.ACTIVE:
                 self._refresh_button(room.room_number)
+
+    def _schedule_blink(self) -> None:
+        for btn in self._room_map.buttons.values():
+            if btn.overdue:
+                btn.toggle_blink()
+        self._root.after(BLINK_INTERVAL_MS, self._schedule_blink)
 
     def _show_history(self) -> None:
         sessions = self._event_repo.get_completed_sessions(limit=200)

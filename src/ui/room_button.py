@@ -12,6 +12,8 @@ class RoomButton(tk.Frame):
         super().__init__(parent, bd=1, relief=tk.RAISED)
         self._room_number = room_number
         self._state = RoomState.AVAILABLE
+        self._overdue = False
+        self._blink_on = True
         self._on_left_click = on_left_click
         self._on_right_click = on_right_click
 
@@ -41,10 +43,31 @@ class RoomButton(tk.Frame):
     def room_number(self) -> int:
         return self._room_number
 
-    def update_display(self, state: RoomState, elapsed_text: Optional[str] = None) -> None:
+    @property
+    def overdue(self) -> bool:
+        return self._overdue
+
+    def update_display(self, state: RoomState,
+                       elapsed_text: Optional[str] = None,
+                       overdue: bool = False) -> None:
         self._state = state
+        self._overdue = overdue
+        if not overdue:
+            self._blink_on = True
         self._apply_colors(state)
         self._elapsed_label.config(text=elapsed_text or "")
+
+    def toggle_blink(self) -> None:
+        if not self._overdue:
+            return
+        self._blink_on = not self._blink_on
+        if self._blink_on:
+            colors = COLORS[self._state.value]
+        else:
+            colors = COLORS["overdue"]
+        self.config(bg=colors["bg"])
+        self._number_label.config(bg=colors["bg"], fg=colors["fg"])
+        self._elapsed_label.config(bg=colors["bg"], fg=colors["fg"])
 
     def _apply_colors(self, state: RoomState) -> None:
         colors = COLORS[state.value]

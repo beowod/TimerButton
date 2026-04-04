@@ -35,12 +35,21 @@
 
 ### Room Button States and Colors
 
-| State     | Background | Text Color | Label Content        |
-|-----------|------------|------------|----------------------|
-| Available | Green      | White      | Room number          |
-| Active    | Red        | White      | Room # + HH:MM:SS   |
-| Paused    | Orange     | Black      | Room # + HH:MM:SS   |
-| Finished  | Blue       | White      | Room # + final time  |
+| State        | Background       | Text Color | Label Content        |
+|--------------|------------------|------------|----------------------|
+| Available    | Green            | White      | Room number          |
+| Active       | Red              | White      | Room # + HH:MM:SS   |
+| Active (overdue) | Red/White blink | Red/White | Room # + HH:MM:SS (blinking) |
+| Paused       | Orange           | Black      | Room # + HH:MM:SS   |
+| Paused (overdue) | Orange/White blink | Orange/White | Room # + HH:MM:SS (blinking) |
+| Finished     | Blue             | White      | Room # + final time  |
+
+### Timer Limit and Overdue Alert
+- Default timer limit: 3 hours (configurable in `src/config.py`)
+- When elapsed time reaches the limit, the room button starts blinking
+- Blink alternates between the normal state color and white/red every 500ms
+- Blinking continues until the timer is stopped or reset
+- To change the limit for testing, edit `TIMER_LIMIT_SECONDS` in `src/config.py`
 
 ### Room Button Rendering
 - Each button is a fixed-size cell in a tkinter grid
@@ -107,6 +116,12 @@
 ### View History
 1. Click "History" button in toolbar
 2. Dialog shows past sessions with room, start, end, elapsed
+
+### Export History to CSV
+1. Open the History dialog
+2. Click "Export CSV" button
+3. A save dialog appears with default filename set to current date/time
+4. Choose location and save
 
 ## Accessibility and Readability
 - High contrast colors for each state
