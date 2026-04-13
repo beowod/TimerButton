@@ -175,25 +175,21 @@ Start-Process $old
     script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
     script_path.write_text(ps_script, encoding="utf-8")
 
-    # Use WMI via PowerShell to spawn a truly independent process that
-    # survives the parent exit. Start a hidden cmd that launches the
-    # update script in a separate powershell instance.
-    launcher = (
-        f'Start-Process -WindowStyle Hidden '
-        f'-FilePath powershell.exe '
-        f'-ArgumentList "-ExecutionPolicy","Bypass",'
-        f'"-WindowStyle","Hidden","-File","{script_path}"'
-    )
-    subprocess.Popen(
-        [
-            "powershell.exe", "-ExecutionPolicy", "Bypass",
-            "-WindowStyle", "Hidden", "-Command", launcher,
-        ],
-        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
-        close_fds=True,
+    # Use a minimal .bat wrapper to launch the PS1 in a hidden window.
+    # cmd.exe /c start launches a fully detached process that survives
+    # the parent's os._exit().
+    bat_path = Path(tempfile.gettempdir()) / "_timerbutton_update.bat"
+    bat_path.write_text(
+        f'@start /b powershell.exe -ExecutionPolicy Bypass '
+        f'-WindowStyle Hidden -File "{script_path}"\r\n',
+        encoding="utf-8",
     )
 
-    # Give the launcher a moment to spawn the child before we die
+    subprocess.Popen(
+        f'cmd.exe /c "{bat_path}"',
+        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
+    )
+
     import time
     time.sleep(1)
     os._exit(0)
