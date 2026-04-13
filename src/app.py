@@ -72,6 +72,11 @@ class Application:
         history_btn = tk.Button(toolbar, text="History", command=self._show_history)
         history_btn.pack(side=tk.RIGHT)
 
+        self._pause_all_btn = tk.Button(
+            toolbar, text="\u23F8 Pause All", command=self._toggle_pause_all,
+        )
+        self._pause_all_btn.pack(side=tk.RIGHT, padx=(5, 0))
+
         speed_frame = tk.Frame(toolbar)
         speed_frame.pack(side=tk.RIGHT, padx=20)
         tk.Button(speed_frame, text="\u2212", width=2,
@@ -84,13 +89,13 @@ class Application:
                   command=self._speed_up).pack(side=tk.LEFT)
 
         self._room_map = RoomMap(
-            self._root,
+            self._root,  # type: ignore[arg-type]
             on_left_click=self._on_room_left_click,
             on_right_click=self._on_room_right_click
         )
         self._room_map.pack(fill=tk.BOTH, expand=True)
 
-        self._status_bar = StatusBar(self._root)
+        self._status_bar = StatusBar(self._root)  # type: ignore[arg-type]
         self._status_bar.pack(fill=tk.X, side=tk.BOTTOM)
 
     # -- Speed control ---------------------------------------------------------
@@ -106,6 +111,25 @@ class Application:
     def _update_speed_label(self) -> None:
         self._speed_label.config(text=f"Speed: {self._speed.speed}x")
 
+    # -- Pause / Resume All ----------------------------------------------------
+
+    def _toggle_pause_all(self) -> None:
+        active_rooms = [
+            r for r in self._rooms.values() if r.state == RoomState.ACTIVE
+        ]
+        paused_rooms = [
+            r for r in self._rooms.values() if r.state == RoomState.PAUSED
+        ]
+
+        if active_rooms:
+            for room in active_rooms:
+                self._pause_timer(room)
+            self._pause_all_btn.config(text="\u25B6 Resume All")
+        elif paused_rooms:
+            for room in paused_rooms:
+                self._resume_timer(room)
+            self._pause_all_btn.config(text="\u23F8 Pause All")
+
     # -- Hotkey management -----------------------------------------------------
 
     def _bind_hotkeys(self) -> None:
@@ -115,12 +139,14 @@ class Application:
             handler = self._make_digit_handler(digit)
             for seq in seqs:
                 self._try_bind(seq, handler)
-        # Config-based bindings (speed controls + optional room overrides)
+        # Config-based bindings (speed, pause_all, optional room overrides)
         for action, seq in self._hotkey_config.bindings.items():
             if action == "speed_up":
                 self._try_bind(seq, self._make_handler(self._speed_up))
             elif action == "speed_down":
                 self._try_bind(seq, self._make_handler(self._speed_down))
+            elif action == "pause_all":
+                self._try_bind(seq, self._make_handler(self._toggle_pause_all))
             elif action.startswith("room_"):
                 try:
                     room_num = int(action.split("_", 1)[1])
@@ -198,7 +224,9 @@ class Application:
         self._bound_keys.clear()
 
     def _show_hotkey_editor(self) -> None:
-        HotkeyEditorDialog(self._root, self._hotkey_config, self._on_hotkeys_changed)
+        HotkeyEditorDialog(
+            self._root, self._hotkey_config, self._on_hotkeys_changed  # type: ignore[arg-type]
+        )
 
     def _on_hotkeys_changed(self) -> None:
         self._bind_hotkeys()
@@ -287,7 +315,9 @@ class Application:
         self._speed.clear_offset(room.current_session_id)
         self._refresh_button(room.room_number)
 
-        self._root.after(3000, lambda rn=room.room_number: self._auto_reset(rn))
+        self._root.after(
+            3000, self._auto_reset, room.room_number  # type: ignore[arg-type]
+        )
 
     def _reset_room(self, room: Room) -> None:
         if not can_transition(room.state, "reset"):
@@ -366,10 +396,10 @@ class Application:
 
     def _show_history(self) -> None:
         sessions = self._event_repo.get_completed_sessions(limit=200)
-        HistoryDialog(self._root, sessions)
+        HistoryDialog(self._root, sessions)  # type: ignore[arg-type]
 
     def _show_update_dialog(self) -> None:
-        UpdateDialog(self._root)
+        UpdateDialog(self._root)  # type: ignore[arg-type]
 
     # -- Cleanup ---------------------------------------------------------------
 

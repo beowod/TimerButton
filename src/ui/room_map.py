@@ -35,10 +35,10 @@ class RoomMap(tk.Frame):
                              padx=2, pady=2, sticky="nsew")
                     self._buttons[cell] = btn
 
-        for col in range(len(ROOM_LAYOUT[0])):
-            self.grid_columnconfigure(col, weight=1, uniform="col")
-        for row in range(len(ROOM_LAYOUT)):
-            self.grid_rowconfigure(row, weight=1, uniform="row")
+        for c in range(len(ROOM_LAYOUT[0])):
+            self.grid_columnconfigure(c, weight=1, uniform="col")
+        for r in range(len(ROOM_LAYOUT)):
+            self.grid_rowconfigure(r, weight=1, uniform="row")
 
     def get_button(self, room_number: int) -> Optional[RoomButton]:
         return self._buttons.get(room_number)

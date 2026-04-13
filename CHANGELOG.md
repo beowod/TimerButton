@@ -4,6 +4,14 @@ All notable changes to the Motel Room Timer application will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-04-06
+
+### Added
+- Timer speed multiplier now goes up to 10x (was 8x)
+- Pause All / Resume All button in toolbar
+- Pause All hotkey: Ctrl+Shift+P (toggles between pause and resume)
+- Pause All is configurable in the hotkey editor
+
 ## [2.1.0] - 2026-04-06
 
 ### Added

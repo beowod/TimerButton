@@ -33,7 +33,7 @@ class HotkeyEditorDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("Edit Hotkeys")
         self.geometry("520x480")
-        self.transient(parent)
+        self.transient(parent)  # type: ignore[call-overload]
         self.grab_set()
 
         self._config = config

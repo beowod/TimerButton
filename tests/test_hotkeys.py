@@ -14,6 +14,7 @@ def test_default_bindings():
         assert config.bindings == DEFAULT_BINDINGS
         assert "speed_up" in config.bindings
         assert "speed_down" in config.bindings
+        assert "pause_all" in config.bindings
 
 
 def test_save_and_load():

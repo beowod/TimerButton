@@ -18,9 +18,9 @@ def test_speed_up():
 
 def test_speed_up_max():
     sc = SpeedController()
-    for _ in range(10):
+    for _ in range(12):
         sc.speed_up()
-    assert sc.speed == 8
+    assert sc.speed == 10
 
 
 def test_speed_down():
@@ -52,13 +52,13 @@ def test_tick_offset_at_2x():
     assert sc.get_offset("s1") == 2.0
 
 
-def test_tick_offset_at_8x():
+def test_tick_offset_at_10x():
     sc = SpeedController()
-    for _ in range(7):
+    for _ in range(9):
         sc.speed_up()
-    assert sc.speed == 8
+    assert sc.speed == 10
     sc.tick(["s1"])
-    assert sc.get_offset("s1") == 7.0
+    assert sc.get_offset("s1") == 9.0
 
 
 def test_clear_offset():

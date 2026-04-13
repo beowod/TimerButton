@@ -14,7 +14,7 @@ class UpdateDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("Check for Updates")
         self.geometry("420x200")
-        self.transient(parent)
+        self.transient(parent)  # type: ignore[call-overload]
         self.resizable(False, False)
 
         self._parent = parent
@@ -130,6 +130,7 @@ class UpdateDialog(tk.Toplevel):
             self._close_btn.config(state=tk.NORMAL, text="Close")
             return
 
+        import sys
         from pathlib import Path
         apply_update(Path(str(new_exe)))
-        self._parent.winfo_toplevel().destroy()
+        sys.exit(0)

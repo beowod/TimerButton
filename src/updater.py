@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -105,17 +106,43 @@ def apply_update(new_exe: Path) -> None:
     if not is_frozen():
         raise RuntimeError("Cannot self-update when running from source.")
 
+    pid = os.getpid()
     old_exe = current_exe_path()
-    backup = old_exe.with_suffix(".exe.bak")
+    backup = old_exe.parent / (old_exe.stem + ".bak")
 
     script = (
         f'@echo off\r\n'
-        f'echo Updating {EXE_ASSET_NAME}...\r\n'
-        f'ping -n 3 127.0.0.1 >nul\r\n'
+        f'echo Waiting for application to exit...\r\n'
+        f':waitloop\r\n'
+        f'tasklist /FI "PID eq {pid}" 2>NUL | find /I "{pid}" >NUL\r\n'
+        f'if not errorlevel 1 (\r\n'
+        f'    timeout /t 1 /nobreak >NUL\r\n'
+        f'    goto waitloop\r\n'
+        f')\r\n'
+        f'timeout /t 2 /nobreak >NUL\r\n'
+        f'echo Applying update...\r\n'
         f'if exist "{backup}" del /f "{backup}"\r\n'
-        f'move /y "{old_exe}" "{backup}"\r\n'
-        f'move /y "{new_exe}" "{old_exe}"\r\n'
+        f'set retries=0\r\n'
+        f':moveloop\r\n'
+        f'move /y "{old_exe}" "{backup}" >NUL 2>&1\r\n'
+        f'if errorlevel 1 (\r\n'
+        f'    set /a retries+=1\r\n'
+        f'    if %retries% GEQ 10 goto fail\r\n'
+        f'    timeout /t 1 /nobreak >NUL\r\n'
+        f'    goto moveloop\r\n'
+        f')\r\n'
+        f'move /y "{new_exe}" "{old_exe}" >NUL 2>&1\r\n'
+        f'if errorlevel 1 (\r\n'
+        f'    echo Restore backup...\r\n'
+        f'    move /y "{backup}" "{old_exe}" >NUL 2>&1\r\n'
+        f'    goto fail\r\n'
+        f')\r\n'
         f'start "" "{old_exe}"\r\n'
+        f'goto cleanup\r\n'
+        f':fail\r\n'
+        f'echo Update failed. Starting original version.\r\n'
+        f'if exist "{old_exe}" start "" "{old_exe}"\r\n'
+        f':cleanup\r\n'
         f'del "%~f0"\r\n'
     )
 

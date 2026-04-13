@@ -11,7 +11,7 @@ class HistoryDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("Session History")
         self.geometry("700x450")
-        self.transient(parent)
+        self.transient(parent)  # type: ignore[call-overload]
         self._sessions = sessions
 
         columns = ("room", "start", "end", "elapsed")
