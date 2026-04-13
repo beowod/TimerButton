@@ -169,6 +169,7 @@ try {{
 }}
 
 "Update successful. Launching new version..." | Out-File $log -Append
+Start-Sleep -Seconds 2
 Start-Process $old
 '''
 
