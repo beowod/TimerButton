@@ -109,39 +109,56 @@ def apply_update(new_exe: Path) -> None:
     pid = os.getpid()
     old_exe = current_exe_path()
     backup = old_exe.parent / (old_exe.stem + ".bak")
+    log = Path(tempfile.gettempdir()) / "_timerbutton_update.log"
 
     script = (
         f'@echo off\r\n'
-        f'echo Waiting for application to exit...\r\n'
+        f'setlocal enabledelayedexpansion\r\n'
+        f'echo [%date% %time%] Update started for PID {pid} > "{log}"\r\n'
+        f'echo Waiting for PID {pid} to exit... >> "{log}"\r\n'
+        f'set waitcount=0\r\n'
         f':waitloop\r\n'
         f'tasklist /FI "PID eq {pid}" 2>NUL | find /I "{pid}" >NUL\r\n'
         f'if not errorlevel 1 (\r\n'
+        f'    set /a waitcount+=1\r\n'
+        f'    if !waitcount! GEQ 30 (\r\n'
+        f'        echo Timeout waiting for app. Force killing. >> "{log}"\r\n'
+        f'        taskkill /PID {pid} /F >NUL 2>&1\r\n'
+        f'        timeout /t 2 /nobreak >NUL\r\n'
+        f'        goto domove\r\n'
+        f'    )\r\n'
         f'    timeout /t 1 /nobreak >NUL\r\n'
         f'    goto waitloop\r\n'
         f')\r\n'
-        f'timeout /t 2 /nobreak >NUL\r\n'
-        f'echo Applying update...\r\n'
+        f':domove\r\n'
+        f'timeout /t 1 /nobreak >NUL\r\n'
+        f'echo Process exited. Swapping exe... >> "{log}"\r\n'
         f'if exist "{backup}" del /f "{backup}"\r\n'
         f'set retries=0\r\n'
         f':moveloop\r\n'
         f'move /y "{old_exe}" "{backup}" >NUL 2>&1\r\n'
         f'if errorlevel 1 (\r\n'
         f'    set /a retries+=1\r\n'
-        f'    if %retries% GEQ 10 goto fail\r\n'
+        f'    echo Retry !retries! - file still locked >> "{log}"\r\n'
+        f'    if !retries! GEQ 15 (\r\n'
+        f'        echo FAILED: could not move exe after 15 retries >> "{log}"\r\n'
+        f'        goto fail\r\n'
+        f'    )\r\n'
         f'    timeout /t 1 /nobreak >NUL\r\n'
         f'    goto moveloop\r\n'
         f')\r\n'
+        f'echo Backup done. Installing new version... >> "{log}"\r\n'
         f'move /y "{new_exe}" "{old_exe}" >NUL 2>&1\r\n'
         f'if errorlevel 1 (\r\n'
-        f'    echo Restore backup...\r\n'
+        f'    echo FAILED: could not install new exe >> "{log}"\r\n'
         f'    move /y "{backup}" "{old_exe}" >NUL 2>&1\r\n'
         f'    goto fail\r\n'
         f')\r\n'
+        f'echo Update successful. Launching new version... >> "{log}"\r\n'
         f'start "" "{old_exe}"\r\n'
         f'goto cleanup\r\n'
         f':fail\r\n'
-        f'echo Update failed. Starting original version.\r\n'
-        f'if exist "{old_exe}" start "" "{old_exe}"\r\n'
+        f'echo Update failed. >> "{log}"\r\n'
         f':cleanup\r\n'
         f'del "%~f0"\r\n'
     )
@@ -154,3 +171,6 @@ def apply_update(new_exe: Path) -> None:
         creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
         close_fds=True,
     )
+
+    # os._exit bypasses tkinter's SystemExit handling and terminates immediately
+    os._exit(0)

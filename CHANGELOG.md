@@ -4,6 +4,14 @@ All notable changes to the Motel Room Timer application will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] - 2026-04-06
+
+### Fixed
+- Self-updater: use `os._exit(0)` to force-terminate (tkinter swallows `sys.exit`)
+- Batch script: enable delayed expansion so retry counter works inside if-blocks
+- Batch script: force-kill app after 30s timeout if it refuses to exit
+- Batch script: writes log to `%TEMP%\_timerbutton_update.log` for debugging
+
 ## [2.2.1] - 2026-04-06
 
 ### Fixed

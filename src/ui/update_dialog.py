@@ -130,7 +130,5 @@ class UpdateDialog(tk.Toplevel):
             self._close_btn.config(state=tk.NORMAL, text="Close")
             return
 
-        import sys
         from pathlib import Path
         apply_update(Path(str(new_exe)))
-        sys.exit(0)
