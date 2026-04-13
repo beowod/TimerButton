@@ -178,7 +178,11 @@ Get-ChildItem $env:TEMP -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue
 "Cleaned _MEI temp dirs" | Out-File $log -Append
 
 $env:_MEIPASS = $null
-Start-Process -FilePath $old -WorkingDirectory (Split-Path $old)
+
+# Use cmd /c start to launch the exe in a fully independent process
+# tree, avoiding any inherited PowerShell environment issues.
+$dir = Split-Path $old
+cmd.exe /c "cd /d `"$dir`" && start `"`" `"$old`""
 '''
 
     script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
