@@ -111,66 +111,77 @@ def apply_update(new_exe: Path) -> None:
     backup = old_exe.parent / (old_exe.stem + ".bak")
     log = Path(tempfile.gettempdir()) / "_timerbutton_update.log"
 
-    script = (
-        f'@echo off\r\n'
-        f'setlocal enabledelayedexpansion\r\n'
-        f'echo [%date% %time%] Update started for PID {pid} > "{log}"\r\n'
-        f'echo Waiting for PID {pid} to exit... >> "{log}"\r\n'
-        f'set waitcount=0\r\n'
-        f':waitloop\r\n'
-        f'tasklist /FI "PID eq {pid}" 2>NUL | find /I "{pid}" >NUL\r\n'
-        f'if not errorlevel 1 (\r\n'
-        f'    set /a waitcount+=1\r\n'
-        f'    if !waitcount! GEQ 30 (\r\n'
-        f'        echo Timeout waiting for app. Force killing. >> "{log}"\r\n'
-        f'        taskkill /PID {pid} /F >NUL 2>&1\r\n'
-        f'        timeout /t 2 /nobreak >NUL\r\n'
-        f'        goto domove\r\n'
-        f'    )\r\n'
-        f'    timeout /t 1 /nobreak >NUL\r\n'
-        f'    goto waitloop\r\n'
-        f')\r\n'
-        f':domove\r\n'
-        f'timeout /t 1 /nobreak >NUL\r\n'
-        f'echo Process exited. Swapping exe... >> "{log}"\r\n'
-        f'if exist "{backup}" del /f "{backup}"\r\n'
-        f'set retries=0\r\n'
-        f':moveloop\r\n'
-        f'move /y "{old_exe}" "{backup}" >NUL 2>&1\r\n'
-        f'if errorlevel 1 (\r\n'
-        f'    set /a retries+=1\r\n'
-        f'    echo Retry !retries! - file still locked >> "{log}"\r\n'
-        f'    if !retries! GEQ 15 (\r\n'
-        f'        echo FAILED: could not move exe after 15 retries >> "{log}"\r\n'
-        f'        goto fail\r\n'
-        f'    )\r\n'
-        f'    timeout /t 1 /nobreak >NUL\r\n'
-        f'    goto moveloop\r\n'
-        f')\r\n'
-        f'echo Backup done. Installing new version... >> "{log}"\r\n'
-        f'move /y "{new_exe}" "{old_exe}" >NUL 2>&1\r\n'
-        f'if errorlevel 1 (\r\n'
-        f'    echo FAILED: could not install new exe >> "{log}"\r\n'
-        f'    move /y "{backup}" "{old_exe}" >NUL 2>&1\r\n'
-        f'    goto fail\r\n'
-        f')\r\n'
-        f'echo Update successful. Launching new version... >> "{log}"\r\n'
-        f'start "" "{old_exe}"\r\n'
-        f'goto cleanup\r\n'
-        f':fail\r\n'
-        f'echo Update failed. >> "{log}"\r\n'
-        f':cleanup\r\n'
-        f'del "%~f0"\r\n'
-    )
+    ps_script = f'''
+$ErrorActionPreference = 'Stop'
+$log = '{log}'
+$pid = {pid}
+$old = '{old_exe}'
+$bak = '{backup}'
+$new = '{new_exe}'
 
-    script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.bat"
-    script_path.write_text(script, encoding="utf-8")
+"[$(Get-Date)] Update started for PID $pid" | Out-File $log
+"Waiting for PID $pid to exit..." | Out-File $log -Append
+
+for ($i = 0; $i -lt 30; $i++) {{
+    try {{
+        $p = Get-Process -Id $pid -ErrorAction Stop
+        Start-Sleep -Seconds 1
+    }} catch {{
+        break
+    }}
+}}
+
+try {{
+    Get-Process -Id $pid -ErrorAction Stop
+    "Timeout. Force killing PID $pid" | Out-File $log -Append
+    Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+}} catch {{}}
+
+"Process exited. Swapping exe..." | Out-File $log -Append
+Start-Sleep -Seconds 1
+
+if (Test-Path $bak) {{ Remove-Item $bak -Force }}
+
+for ($r = 0; $r -lt 15; $r++) {{
+    try {{
+        Move-Item $old $bak -Force -ErrorAction Stop
+        break
+    }} catch {{
+        "Retry $($r+1) - file locked" | Out-File $log -Append
+        Start-Sleep -Seconds 1
+    }}
+}}
+
+if (-not (Test-Path $bak)) {{
+    "FAILED: could not move exe to backup" | Out-File $log -Append
+    exit 1
+}}
+
+"Backup done. Installing new version..." | Out-File $log -Append
+
+try {{
+    Move-Item $new $old -Force -ErrorAction Stop
+}} catch {{
+    "FAILED: could not install new exe. Restoring backup." | Out-File $log -Append
+    Move-Item $bak $old -Force -ErrorAction SilentlyContinue
+    exit 1
+}}
+
+"Update successful. Launching new version..." | Out-File $log -Append
+Start-Process $old
+'''
+
+    script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
+    script_path.write_text(ps_script, encoding="utf-8")
 
     subprocess.Popen(
-        ["cmd.exe", "/c", str(script_path)],
+        [
+            "powershell.exe", "-ExecutionPolicy", "Bypass",
+            "-WindowStyle", "Hidden", "-File", str(script_path),
+        ],
         creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
         close_fds=True,
     )
 
-    # os._exit bypasses tkinter's SystemExit handling and terminates immediately
     os._exit(0)

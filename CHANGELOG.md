@@ -4,6 +4,19 @@ All notable changes to the Motel Room Timer application will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.6] - 2026-04-06
+
+### Fixed
+- Version bump to test self-update from v2.2.5
+
+## [2.2.5] - 2026-04-06
+
+### Fixed
+- Replaced batch update script with PowerShell for reliable process detection
+- PowerShell uses Get-Process by PID instead of fragile tasklist+find pipe
+- Hidden window style prevents console flash during update
+- Proper error handling with try/catch instead of errorlevel checks
+
 ## [2.2.4] - 2026-04-06
 
 ### Fixed
