@@ -114,17 +114,17 @@ def apply_update(new_exe: Path) -> None:
     ps_script = f'''
 $ErrorActionPreference = 'Stop'
 $log = '{log}'
-$pid = {pid}
+$appPid = {pid}
 $old = '{old_exe}'
 $bak = '{backup}'
 $new = '{new_exe}'
 
-"[$(Get-Date)] Update started for PID $pid" | Out-File $log
-"Waiting for PID $pid to exit..." | Out-File $log -Append
+"[$(Get-Date)] Update started for PID $appPid" | Out-File $log
+"Waiting for PID $appPid to exit..." | Out-File $log -Append
 
 for ($i = 0; $i -lt 30; $i++) {{
     try {{
-        $p = Get-Process -Id $pid -ErrorAction Stop
+        $p = Get-Process -Id $appPid -ErrorAction Stop
         Start-Sleep -Seconds 1
     }} catch {{
         break
@@ -132,9 +132,9 @@ for ($i = 0; $i -lt 30; $i++) {{
 }}
 
 try {{
-    Get-Process -Id $pid -ErrorAction Stop
-    "Timeout. Force killing PID $pid" | Out-File $log -Append
-    Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+    Get-Process -Id $appPid -ErrorAction Stop
+    "Timeout. Force killing PID $appPid" | Out-File $log -Append
+    Stop-Process -Id $appPid -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
 }} catch {{}}
 
