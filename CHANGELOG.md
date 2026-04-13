@@ -4,6 +4,13 @@ All notable changes to the Motel Room Timer application will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.7] - 2026-04-06
+
+### Fixed
+- Updater uses Start-Process to spawn truly independent child process
+- 1-second delay before os._exit to let launcher fully spawn
+- Fixes issue where PowerShell update script was killed with parent
+
 ## [2.2.6] - 2026-04-06
 
 ### Fixed
