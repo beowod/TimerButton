@@ -4,6 +4,16 @@ All notable changes to the Motel Room Timer application will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-04-06
+
+### Added
+- "Check for Updates" button in toolbar
+- Automatic update checker: queries GitHub Releases API for new versions
+- Download progress dialog with percentage and MB counter
+- Self-update for packaged .exe: downloads new version, swaps executable, restarts
+- Rollback safety: keeps .exe.bak of previous version during update
+- Graceful fallback when running from source (shows download path)
+
 ## [2.0.0] - 2026-04-06
 
 ### Added

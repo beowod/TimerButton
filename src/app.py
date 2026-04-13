@@ -18,6 +18,7 @@ from src.ui.room_map import RoomMap
 from src.ui.status_bar import StatusBar
 from src.ui.history_dialog import HistoryDialog
 from src.ui.hotkey_editor import HotkeyEditorDialog
+from src.ui.update_dialog import UpdateDialog
 
 
 class Application:
@@ -60,6 +61,10 @@ class Application:
 
         title = tk.Label(toolbar, text=APP_NAME, font=("Segoe UI", 14, "bold"))
         title.pack(side=tk.LEFT)
+
+        update_btn = tk.Button(toolbar, text="Check for Updates",
+                               command=self._show_update_dialog)
+        update_btn.pack(side=tk.RIGHT, padx=(5, 0))
 
         hotkeys_btn = tk.Button(toolbar, text="Hotkeys", command=self._show_hotkey_editor)
         hotkeys_btn.pack(side=tk.RIGHT, padx=(5, 0))
@@ -362,6 +367,9 @@ class Application:
     def _show_history(self) -> None:
         sessions = self._event_repo.get_completed_sessions(limit=200)
         HistoryDialog(self._root, sessions)
+
+    def _show_update_dialog(self) -> None:
+        UpdateDialog(self._root)
 
     # -- Cleanup ---------------------------------------------------------------
 

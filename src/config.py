@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 APP_NAME = "Motel Room Timer"
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.1.0"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -41,6 +41,7 @@ SPEED_MIN = 1
 SPEED_MAX = 8
 SPEED_LABEL_FONT = ("Segoe UI", 11, "bold")
 HOTKEY_CONFIG_PATH = DATA_DIR / "hotkeys.json"
+GITHUB_REPO = "beowod/TimerButton"
 
 COLORS = {
     "available": {"bg": "#2ecc71", "fg": "#ffffff"},
