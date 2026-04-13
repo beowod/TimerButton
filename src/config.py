@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 APP_NAME = "Motel Room Timer"
-APP_VERSION = "2.2.10"
+APP_VERSION = "2.2.11"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"

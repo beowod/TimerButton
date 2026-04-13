@@ -170,7 +170,15 @@ try {{
 
 "Update successful. Launching new version..." | Out-File $log -Append
 Start-Sleep -Seconds 2
-Start-Process $old
+
+# Clean up any leftover _MEI* dirs from the old version to avoid
+# PyInstaller DLL-load conflicts, then launch from the exe's own folder.
+Get-ChildItem $env:TEMP -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue |
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+"Cleaned _MEI temp dirs" | Out-File $log -Append
+
+$env:_MEIPASS = $null
+Start-Process -FilePath $old -WorkingDirectory (Split-Path $old)
 '''
 
     script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
