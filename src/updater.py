@@ -185,12 +185,12 @@ Start-Process wscript.exe -ArgumentList "`"$vbs`""
     # This avoids the visible PowerShell window that -WindowStyle Hidden
     # doesn't fully suppress on all Windows versions.
     vbs_launcher = Path(tempfile.gettempdir()) / "_timerbutton_update.vbs"
-    vbs_launcher.write_text(
-        f'CreateObject("WScript.Shell").Run '
-        f'"powershell.exe -ExecutionPolicy Bypass -File """'
-        f'{script_path}""" ", 0, False\r\n',
-        encoding="utf-8",
+    vbs_cmd = (
+        'CreateObject("WScript.Shell").Run '
+        f'"powershell.exe -ExecutionPolicy Bypass -File ""'
+        f'{script_path}"" ", 0, False'
     )
+    vbs_launcher.write_text(vbs_cmd + '\r\n', encoding="utf-8")
 
     subprocess.Popen(
         f'wscript.exe "{vbs_launcher}"',
