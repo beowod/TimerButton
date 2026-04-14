@@ -92,7 +92,7 @@ class HotkeyEditorDialog(tk.Toplevel):
     def _refresh_list(self) -> None:
         for item in self._tree.get_children():
             self._tree.delete(item)
-        for action in ("speed_up", "speed_down"):
+        for action in ("speed_up", "speed_down", "pause_all"):
             seq = self._edited.get(action, "")
             display = binding_display(seq) if seq else "(unbound)"
             self._tree.insert("", tk.END, iid=action,
