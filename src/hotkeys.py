@@ -6,9 +6,9 @@ from src.config import HOTKEY_CONFIG_PATH
 
 
 DEFAULT_BINDINGS: dict[str, str] = {
-    "speed_up": "<Control-Shift-equal>",
+    "speed_up": "<Control-Shift-plus>",
     "speed_down": "<Control-Shift-minus>",
-    "pause_all": "<Control-Shift-Key-p>",
+    "pause_all": "<Control-Shift-Key-P>",
 }
 
 # Chord digit keysym patterns covering both raw digit and shifted-symbol keysyms
