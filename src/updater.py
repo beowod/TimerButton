@@ -170,31 +170,30 @@ try {{
 
 "Update successful. Please relaunch the application." | Out-File $log -Append
 
-# Show a message box telling the user the update succeeded.
-Add-Type -AssemblyName System.Windows.Forms
-[System.Windows.Forms.MessageBox]::Show(
-    "Update installed successfully!`n`nPlease relaunch MotelRoomTimer.",
-    "Update Complete",
-    [System.Windows.Forms.MessageBoxButtons]::OK,
-    [System.Windows.Forms.MessageBoxIcon]::Information
-) | Out-Null
+# Use wscript/VBS for the popup -- works reliably in any context.
+$vbs = Join-Path $env:TEMP "_timerbutton_done.vbs"
+$t = 'MsgBox "Update installed!" & vbCrLf & vbCrLf'
+$t += ' & "Please relaunch.", 64, "Done"'
+Set-Content $vbs $t
+Start-Process wscript.exe -ArgumentList "`"$vbs`""
 '''
 
     script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
     script_path.write_text(ps_script, encoding="utf-8")
 
-    # Use a minimal .bat wrapper to launch the PS1 in a hidden window.
-    # cmd.exe /c start launches a fully detached process that survives
-    # the parent's os._exit().
-    bat_path = Path(tempfile.gettempdir()) / "_timerbutton_update.bat"
-    bat_path.write_text(
-        f'@start /b powershell.exe -ExecutionPolicy Bypass '
-        f'-WindowStyle Hidden -File "{script_path}"' + '\r\n',
+    # Launch PS1 completely hidden via wscript + VBS wrapper.
+    # This avoids the visible PowerShell window that -WindowStyle Hidden
+    # doesn't fully suppress on all Windows versions.
+    vbs_launcher = Path(tempfile.gettempdir()) / "_timerbutton_update.vbs"
+    vbs_launcher.write_text(
+        f'CreateObject("WScript.Shell").Run '
+        f'"powershell.exe -ExecutionPolicy Bypass -File """'
+        f'{script_path}""" ", 0, False\r\n',
         encoding="utf-8",
     )
 
     subprocess.Popen(
-        f'cmd.exe /c "{bat_path}"',
+        f'wscript.exe "{vbs_launcher}"',
         creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
     )
 
