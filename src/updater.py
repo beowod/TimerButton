@@ -168,24 +168,16 @@ try {{
     exit 1
 }}
 
-"Update successful." | Out-File $log -Append
+"Update successful. Please relaunch the application." | Out-File $log -Append
 
-# Clean up leftover _MEI* dirs from the old PyInstaller extraction.
-Get-ChildItem $env:TEMP -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue |
-    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-"Cleaned _MEI temp dirs" | Out-File $log -Append
-
-# Write a launcher bat that will start the exe from a completely clean
-# process with no PowerShell involvement whatsoever.
-$launcher = Join-Path $env:TEMP "_timerbutton_launch.bat"
-@"
-@echo off
-timeout /t 3 /nobreak >nul
-start "" "$old"
-"@ | Out-File $launcher -Encoding ASCII
-
-"Launching via $launcher ..." | Out-File $log -Append
-Start-Process -WindowStyle Hidden cmd.exe -ArgumentList "/c `"$launcher`""
+# Show a message box telling the user the update succeeded.
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.MessageBox]::Show(
+    "Update installed successfully!`n`nPlease relaunch MotelRoomTimer.",
+    "Update Complete",
+    [System.Windows.Forms.MessageBoxButtons]::OK,
+    [System.Windows.Forms.MessageBoxIcon]::Information
+) | Out-Null
 '''
 
     script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
