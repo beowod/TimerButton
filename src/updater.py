@@ -168,21 +168,24 @@ try {{
     exit 1
 }}
 
-"Update successful. Launching new version..." | Out-File $log -Append
-Start-Sleep -Seconds 2
+"Update successful." | Out-File $log -Append
 
-# Clean up any leftover _MEI* dirs from the old version to avoid
-# PyInstaller DLL-load conflicts, then launch from the exe's own folder.
+# Clean up leftover _MEI* dirs from the old PyInstaller extraction.
 Get-ChildItem $env:TEMP -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 "Cleaned _MEI temp dirs" | Out-File $log -Append
 
-$env:_MEIPASS = $null
+# Write a launcher bat that will start the exe from a completely clean
+# process with no PowerShell involvement whatsoever.
+$launcher = Join-Path $env:TEMP "_timerbutton_launch.bat"
+@"
+@echo off
+timeout /t 3 /nobreak >nul
+start "" "$old"
+"@ | Out-File $launcher -Encoding ASCII
 
-# Use cmd /c start to launch the exe in a fully independent process
-# tree, avoiding any inherited PowerShell environment issues.
-$dir = Split-Path $old
-cmd.exe /c "cd /d `"$dir`" && start `"`" `"$old`""
+"Launching via $launcher ..." | Out-File $log -Append
+Start-Process -WindowStyle Hidden cmd.exe -ArgumentList "/c `"$launcher`""
 '''
 
     script_path = Path(tempfile.gettempdir()) / "_timerbutton_update.ps1"
@@ -194,7 +197,7 @@ cmd.exe /c "cd /d `"$dir`" && start `"`" `"$old`""
     bat_path = Path(tempfile.gettempdir()) / "_timerbutton_update.bat"
     bat_path.write_text(
         f'@start /b powershell.exe -ExecutionPolicy Bypass '
-        f'-WindowStyle Hidden -File "{script_path}"\r\n',
+        f'-WindowStyle Hidden -File "{script_path}"' + '\r\n',
         encoding="utf-8",
     )
 
